@@ -3,11 +3,13 @@ package tests;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import com.github.javafaker.Faker;
+import helpers.Attach;
 import io.qameta.allure.selenide.AllureSelenide;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import pages.RegistrationFormPage;
+
+import static com.codeborne.selenide.Selenide.closeWebDriver;
 
 @Tag("demoqa")
 public class RegistrationFormTest {
@@ -36,9 +38,17 @@ public class RegistrationFormTest {
     @BeforeAll
     static void beforeAll() {
         Configuration.baseUrl = "https://demoqa.com";
+        Configuration.browserSize = "1920x1080";
+        Configuration.remote = "https://user1:1234@selenoid.autotests.cloud/wd/hub";
+
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("enableVNC", true);
+        capabilities.setCapability("enableVideo", true);
+        Configuration.browserCapabilities = capabilities;
     }
 
     @Test
+    @DisplayName("Successful fill registration test")
     void fillFormTest() {
         SelenideLogger.addListener("allure", new AllureSelenide());
         registrationFormPage.openPage()
@@ -67,5 +77,15 @@ public class RegistrationFormTest {
                             .checkResult("State and City", stateCity)
                             .close();
     }
+
+    @AfterEach
+    void addAttachments() {
+        Attach.screenshotAs("Last screenshot");
+        Attach.pageSource();
+        Attach.browserConsoleLogs();
+        Attach.addVideo();
+        closeWebDriver();
+    }
+
 }
 
